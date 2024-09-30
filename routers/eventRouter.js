@@ -1,18 +1,15 @@
 import express from "express";
-import { EventControllers } from "../controllers/eventControllers.js";
+import { EventController } from "../controllers/eventController.js";
 import { getUserInfo,verifyUserInfo } from "../middlewares/getUserInfo.js";
 import { validateEventPOR } from "../middlewares/validateEventPOR.js";
 
 const eventRouter = express.Router();
 
-eventRouter.get("/events",verifyUserInfo, EventControllers.getEvents);
+eventRouter.get("/events",verifyUserInfo, EventController.getAllEvents);
+eventRouter.post("/events",getUserInfo,validateEventPOR, EventController.postEvent);
 
-eventRouter.get("/events/:id",verifyUserInfo, EventControllers.getEventById);
-
-eventRouter.post("/events",getUserInfo,validateEventPOR, EventControllers.postEvent);
-
-eventRouter.put("/events/:id",getUserInfo,validateEventPOR, EventControllers.updateEvent);
-
-eventRouter.delete("/events/:id",getUserInfo,validateEventPOR, EventControllers.deleteEvent);
+eventRouter.get("/events/event",verifyUserInfo, EventController.getEvent);
+eventRouter.put("/events/event",getUserInfo,validateEventPOR, EventController.editEvent);
+eventRouter.delete("/events/event",getUserInfo,validateEventPOR, EventController.deleteEvent);
 
 export default eventRouter;

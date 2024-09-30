@@ -9,15 +9,23 @@
   },
   "author": "SWC IITG",
   "license": "ISC",
+  "type": "module",
   "dependencies": {
+    "@adminjs/express": "^6.1.0",
+    "@adminjs/mongoose": "^4.1.0",
+    "adminjs": "^7.8.13",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "fs": "^0.0.1-security",
-    "mongoose": "^8.6.2",
-    "nodemon": "^3.1.4",
+    "mongoose": "^8.7.0",
+    "nodemon": "^3.1.7",
     "path": "^0.12.7",
     "sharp": "^0.33.5",
     "uuid": "^10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/swciitg/Event-Scheduler_2024.git"
   }
 }
