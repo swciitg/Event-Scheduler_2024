@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {onestopUserEndpoint} from '../shared/constants.js';
+import {onestopUserEndpoint, onestopUserTestEndpoint} from '../shared/constants.js';
 import {RequestValidationError} from "../errors/requestValidationError.js";
 import {AccessTokenError} from "../errors/accessTokenError.js";
 import {UserBlockedError} from "../errors/userBlockedError.js";
@@ -8,7 +8,11 @@ import {NotAuthorizedError} from "../errors/notAuthorizedError.js";
 
 export const getOnestopUser = async (authHeader, onestopSecurityKey) => {
     try {
-        const res = await axios.get(onestopUserEndpoint, {
+        let userEndpoint = onestopUserEndpoint;
+        if( process.env.NODE_ENV === 'dev'){
+            userEndpoint = onestopUserTestEndpoint;
+        }
+        const res = await axios.get(userEndpoint, {
             headers: {
                 "authorization": authHeader,
                 "security-key": onestopSecurityKey,

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const porSchema = new mongoose.Schema({
-    rollNo: { type: String, required: true },
+    outlookEmail: { type: String, required: true },
     club_org: { type: String, required: true },
     position: { type: String, required: true },
 });
