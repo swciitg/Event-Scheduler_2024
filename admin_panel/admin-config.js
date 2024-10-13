@@ -4,10 +4,11 @@ import * as AdminJSMongoose from "@adminjs/mongoose";
 import mongoose from "mongoose";
 import express from "express";
 import dotenv from "dotenv";
-
 dotenv.config();
 
-import porModel from "../models/porModel.js"; // Your mongoose model
+import porModel from "../models/porModel.js";
+
+const ADMINPANELROOT = process.env.BASE_URL + "/admin";
 
 const DEFAULT_ADMIN = {
   email: process.env.ADMIN_PANEL_EMAIL,
@@ -26,16 +27,15 @@ const authenticate = async (email, password) => {
   return null;
 };
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect(process.env.MONGO_URI);
 
 const adminOptions = {
   resources: [
     porModel,
   ],
-  rootPath: "/admin",
+  rootPath: ADMINPANELROOT,
+  loginPath: ADMINPANELROOT + "/login",
+  logoutPath: ADMINPANELROOT + "/logout"
 };
 
 const admin = new AdminJS(adminOptions);

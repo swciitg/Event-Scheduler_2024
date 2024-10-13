@@ -9,6 +9,7 @@ export const validateEventPOR = async (req, res, next) => {
 
         let por = await porModel.findOne({ outlookEmail: outlookEmail, club_org: club_org });
         if (!por) {
+            console.log("POR not found");
             return res.status(400).json({
                 success: false,
                 message: "You are not a part of this club/organization"

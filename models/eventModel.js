@@ -6,7 +6,7 @@ const eventSchema = new mongoose.Schema({
     compressedImageURL: { type: String },
     description: { type: String },
     club_org: { type: String, required: true },
-    date: { type: Date, required: true },
+    dateTime: { type: Date, required: true },
     venue: { type: String },
     contactNumber: { type: String },
 });

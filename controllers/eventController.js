@@ -1,44 +1,62 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from 'url'
 import sharp from "sharp";
-import {v4} from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import eventModel from "../models/eventModel.js";
+import porModel from "../models/porModel.js";
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function errorFxn(res, err) {
-    console.log(err.message)
-    return res.status(500).json({
-        saved_successfully: false,
-        image_safe: true
-    });
+// Set the upload directory
+const uploadDir = path.resolve('uploads');
+
+// Base URL for serving static images
+// const baseURL = `${process.env.API_URL}${process.env.BASE_URL}`;
+let baseURL = process.env.BASE_URL;
+if (process.env.NODE_ENV === 'dev') {
+    baseURL = `${process.env.API_URL}${process.env.PORT}`;
 }
 
+// Get all events
 const getAllEvents = async (req, res) => {
     try {
         const details = await eventModel.find();
-        return res.json({
-            allEvents : details
+        return res.status(200).json({
+            message: 'All events fetched successfully',
+            allEvents: details
         });
     } catch (error) {
+        console.log("Error in getting all events");
         console.log(error.message);
+        return res.status(500).json({
+            message: 'Server error, could not get all events'
+        });
     }
-}
+};
 
+// Get a single event by ID
 const getEvent = async (req, res) => {
     try {
-        const eventId = req.query.id;
+        const eventId = req.params.id;
         if (!eventId) {
             return res.status(400).json({
                 message: 'Event ID is required'
             });
         }
-        console.log(eventId);
+
+        // if eventId is not a valid ObjectId
+        if (!eventId.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(400).json({
+                message: 'Invalid event ID'
+            });
+        }
 
         const details = await eventModel.findById(eventId);
-
         if (!details) {
             return res.status(404).json({
                 message: 'Event not found'
@@ -50,76 +68,73 @@ const getEvent = async (req, res) => {
         });
     } catch (error) {
         console.error(error.message);
-
         return res.status(500).json({
             message: 'Server error'
         });
     }
 };
 
+// Post a new event
 const postEvent = async (req, res) => {
     try {
-        const { title, club_org, date, description, venue, contactNumber } = req.body;
+        const { title, club_org, dateTime, description, venue, contactNumber } = req.body;
         const image = req.file;
 
-        // Check if required fields are present
-        if (!title || !club_org || !date) {
+        if (!title || !club_org || !dateTime) {
             return res.status(400).json({
                 saved_successfully: false,
-                message: "Title, club_org, and date are required fields.",
+                message: "Title, club_org, and dateTime are required fields.",
             });
         }
 
         let compressedImageName = null;
+        let fullImageUrl = null;
+        let compressedImageUrl = null;
+
         if (image) {
-            const compressedImage = await sharp(image.buffer)
-                .resize(200, 200)
+            const compressedImage = await sharp(image.path)
                 .toBuffer();
-            compressedImageName = v4() + "-compressed.jpg";
-            const compressedImagePath = path.resolve(
-                __dirname + "/../" + "images_folder" + "/" + compressedImageName
-            );
+            compressedImageName = uuidv4() + "-compressed.jpg";
+            const compressedImagePath = path.resolve(uploadDir, compressedImageName);
             fs.writeFileSync(compressedImagePath, compressedImage);
+
+            // Build full URLs
+            fullImageUrl = `${baseURL}/uploads/${image.filename}`;
+            compressedImageUrl = `${baseURL}/uploads/${compressedImageName}`;
         }
 
         const newEvent = new eventModel({
             title,
             club_org,
-            date,
+            dateTime,
             description, // Optional
             venue, // Optional
             contactNumber, // Optional
-            imageURL: image ? image.filename : null,
-            compressedImageURL: compressedImageName // Will be null if no image
+            imageURL: fullImageUrl,
+            compressedImageURL: compressedImageUrl // Will be null if no image
         });
 
         await newEvent.save();
+        // return id of the newly created event for future reference
         return res.json({
             saved_successfully: true,
-            image_safe: true,
+            id: newEvent._id
         });
     } catch (error) {
-        console.log("Error in adding event");
-        errorFxn(res, error);
+        console.error("Error in posting event", error.message);
+        return res.status(500).json({
+            saved_successfully: false
+        });
     }
 };
 
+// Edit an event
 const editEvent = async (req, res) => {
     try {
-        const eventId = req.query.id;
-        if (!eventId){
+        const eventId = req.params.id;
+        if (!eventId) {
             return res.status(400).json({
                 message: 'Event ID is required'
-            });
-        }
-        const { title, club_org, date, description, venue, contactNumber } = req.body;
-        const image = req.file;
-
-        // Check if required fields are present
-        if (!title || !club_org || !date) {
-            return res.status(400).json({
-                saved_successfully: false,
-                message: "Title, club_org, and date are required fields.",
             });
         }
 
@@ -128,162 +143,160 @@ const editEvent = async (req, res) => {
             return res.status(404).json({ message: "Event not found" });
         }
 
-        if (image) {
-            const compressedImagePath = path.resolve(
-                __dirname + "/../" + "images_folder" + "/" + details.compressedImageURL
-            );
-            const imagePath = path.resolve(
-                __dirname + "/../" + "images_folder" + "/" + details.imageURL
-            );
-            if (fs.existsSync(compressedImagePath)) {
-                fs.unlinkSync(compressedImagePath);
-            }
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
+        const userEmail = req.user.outlookEmail;
 
-            const compressedImage = await sharp(image.buffer)
-                .resize(200, 200)
-                .toBuffer();
-            const compressedImageName = v4() + "-compressed.jpg";
-            const compressedImagePathNew = path.resolve(
-                __dirname + "/../" + "images_folder" + "/" + compressedImageName
-            );
-            fs.writeFileSync(compressedImagePathNew, compressedImage);
-
-            details.imageURL = image.filename;
-            details.compressedImageURL = compressedImageName;
+        // Check if the user is authorized to edit the event
+        const user = await porModel.findOne({ outlookEmail: userEmail, club_org: details.club_org });
+        if (!user) {
+            return res.status(400).json({
+                message: "You are not authorized to edit this event, as you are not a part of this club/organization."
+            });
         }
 
-        details.title = title;
-        details.club_org = club_org;
-        details.date = date;
-        details.description = description || details.description;
-        details.venue = venue || details.venue;
-        details.contactNumber = contactNumber || details.contactNumber;
+        const { title, club_org, dateTime, description, venue, contactNumber } = req.body;
+        const image = req.file;
+
+        let fullImageUrl = details.imageURL;
+        let compressedImageUrl = details.compressedImageURL;
+
+        if (image) {
+
+            // Delete old images if they exist
+            if (details.compressedImageURL) {
+                const compressedImagePath = path.resolve(uploadDir, details.compressedImageURL);
+                if (fs.existsSync(compressedImagePath)) {
+                    fs.unlinkSync(compressedImagePath);
+                }
+            }
+            if (details.imageURL) {
+                const imagePath = path.resolve(uploadDir, details.imageURL);
+                if (fs.existsSync(imagePath)) {
+                    fs.unlinkSync(imagePath);
+                }
+            }
+
+            // Save new image
+            const compressedImage = await sharp(image.path).toBuffer();
+            const compressedImageName = uuidv4() + "-compressed.jpg";
+            const compressedImagePathNew = path.resolve(uploadDir, compressedImageName);
+            fs.writeFileSync(compressedImagePathNew, compressedImage);
+
+            // Build full URLs for new images
+            fullImageUrl = `${baseURL}/uploads/${image.filename}`;
+            compressedImageUrl = `${baseURL}/uploads/${compressedImageName}`;
+        }
+
+        if (title) details.title = title;
+        if (club_org) details.club_org = club_org;
+        if (dateTime) details.dateTime = dateTime;
+        if (description) details.description = description;
+        if (venue) details.venue = venue;
+        if (contactNumber) details.contactNumber = contactNumber;
+
+        details.imageURL = fullImageUrl;
+        details.compressedImageURL = compressedImageUrl;
 
         await details.save();
         return res.json({
-            saved_successfully: true,
-            image_safe: true,
+            edited_successfully: true,
         });
     } catch (error) {
-        errorFxn(res, error);
+        console.error("Error in editing event: ", error.message);
+        console.log(error);
+        return res.status(500).json({
+            edited_successfully: false,
+        });
     }
 };
 
+// Delete an event
 const deleteEvent = async (req, res) => {
     try {
-        const eventId = req.query.id;
+        const eventId = req.params.id;
 
-        // Check if event ID is provided
         if (!eventId) {
             return res.status(400).json({
                 message: 'Event ID is required'
             });
         }
 
-        // Find event by ID
         const details = await eventModel.findById(eventId);
-
-        // Check if event exists
         if (!details) {
             return res.status(404).json({
                 message: 'Event not found'
             });
         }
 
-        // Resolve paths for the images
-        const compressedImagePath = path.resolve(__dirname + "/../images_folder/" + details.compressedImageURL);
-        const imagePath = path.resolve(__dirname + "/../images_folder/" + details.imageURL);
+        const userEmail = req.user.outlookEmail;
+        
+        // check if the user is authorized to delete the event
+        const user = await porModel.findOne({ outlookEmail: userEmail, club_org: details.club_org });
+        if (!user) {
+            return res.status(400).json({
+                message: "You are not authorized to delete this event, as you are not a part of this club/organization."
+            });
+        }
 
-        let imageDeletionReport = {
-            compressedImageDeleted: false,
-            mainImageDeleted: false,
-            compressedImageMissing: false,
-            mainImageMissing: false
-        };
-
-        // Try deleting compressed image
-        try {
+        if (details.compressedImageURL) {
+            const compressedImagePath = path.resolve(uploadDir, details.compressedImageURL);
             if (fs.existsSync(compressedImagePath)) {
                 fs.unlinkSync(compressedImagePath);
-                imageDeletionReport.compressedImageDeleted = true;
-            } else {
-                imageDeletionReport.compressedImageMissing = true;
-                console.warn(`Compressed image not found: ${compressedImagePath}`);
             }
-        } catch (err) {
-            console.error(`Failed to delete compressed image: ${err.message}`);
         }
-
-        // Try deleting main image
-        try {
+        if (details.imageURL) {
+            const imagePath = path.resolve(uploadDir, details.imageURL);
             if (fs.existsSync(imagePath)) {
                 fs.unlinkSync(imagePath);
-                imageDeletionReport.mainImageDeleted = true;
-            } else {
-                imageDeletionReport.mainImageMissing = true;
-                console.warn(`Main image not found: ${imagePath}`);
             }
-        } catch (err) {
-            console.error(`Failed to delete main image: ${err.message}`);
         }
-
-        // Delete the event from the database
         await eventModel.findByIdAndDelete(eventId);
-
-        // Construct the response with detailed image deletion report
         return res.json({
-            deleted_successfully: true,
-            imageDeletionReport: imageDeletionReport
+            deleted_successfully: true
         });
-
     } catch (error) {
-        console.error(`Error occurred during event deletion: ${error.message}`);
-
+        console.error("Error in deleting event", error.message);
         return res.status(500).json({
-            message: 'Server error occurred while deleting event'
+            message: 'Server error'
         });
     }
 };
 
+// Delete all events
 const deleteAllEvents = async (req, res) => {
     try {
         const details = await eventModel.find();
-        details.forEach(async (detail) => {
-            const compressedImagePath = path.resolve(
-                __dirname +
-                "/../" +
-                "images_folder" +
-                "/" +
-                detail.compressedImageURL
-            );
-            const imagePath = path.resolve(
-                __dirname +
-                "/../" +
-                "images_folder" +
-                "/" +
-                detail.imageURL
-            );
-            fs.unlinkSync(compressedImagePath);
-            fs.unlinkSync(imagePath);
+        for (let detail of details) {
+            if (detail.compressedImageURL) {
+                const compressedImagePath = path.resolve(uploadDir, detail.compressedImageURL);
+                if (fs.existsSync(compressedImagePath)) {
+                    fs.unlinkSync(compressedImagePath);
+                }
+            }
+            if (detail.imageURL) {
+                const imagePath = path.resolve(uploadDir, detail.imageURL);
+                if (fs.existsSync(imagePath)) {
+                    fs.unlinkSync(imagePath);
+                }
+            }
             await eventModel.findByIdAndDelete(detail._id);
-        });
+        }
         return res.json({
             deleted_successfully: true
         });
+    } catch (error) {
+        console.log("Error in deleting all events", error.message);
+        return res.status(500).json({
+            message: 'Internal Server error'
+        });
     }
-    catch (error) {
-        console.log(error.message);
-    }
-}
+};
 
+// Export the controller
 export const EventController = {
-    getAllEvents: getAllEvents,
-    getEvent: getEvent,
-    postEvent: postEvent,
-    editEvent: editEvent,
-    deleteEvent: deleteEvent,
-    deleteAllEvents: deleteAllEvents
-}
+    getAllEvents,
+    getEvent,
+    postEvent,
+    editEvent,
+    deleteEvent,
+    deleteAllEvents
+};
