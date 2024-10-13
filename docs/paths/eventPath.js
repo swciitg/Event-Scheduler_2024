@@ -66,6 +66,10 @@ const eventPath = {
                                         "type": "string",
                                         "example": "Octaves"
                                     },
+                                    "board": {
+                                        "type": "string",
+                                        "example": "Cultural"
+                                    },
                                     "startDateTime": {
                                         "type": "string",
                                         "example": "2024-10-17T19:00:00.000Z"
@@ -203,6 +207,10 @@ const eventPath = {
                         "club_org": {
                             "type": "string",
                             "example": "Octaves"
+                        },
+                        "board": {
+                            "type": "string",
+                            "example": "Cultural"
                         },
                         "contactNumber": {
                             "type": "string",

@@ -123,13 +123,13 @@ const getGroupedEvents = async (req, res) => {
 // Post a new event
 const postEvent = async (req, res) => {
     try {
-        const { title, club_org, startDateTime, endDateTime, description, venue, contactNumber, categories } = req.body;
+        const { title, club_org, board, startDateTime, endDateTime, description, venue, contactNumber, categories } = req.body;
         const image = req.file;
 
-        if (!title || !club_org || !startDateTime || !endDateTime) {
+        if (!title || !club_org || !startDateTime || !endDateTime || !board) {
             return res.status(400).json({
                 saved_successfully: false,
-                message: "Title, club_org, startDateTime and endDateTime are required"
+                message: "Title, club_org, board, startDateTime and endDateTime are required"
             });
         }
 
@@ -170,6 +170,7 @@ const postEvent = async (req, res) => {
         const newEvent = new eventModel({
             title,
             club_org,
+            board,
             startDateTime,
             endDateTime,
             description, // Optional
@@ -213,14 +214,14 @@ const editEvent = async (req, res) => {
         const userEmail = req.user.outlookEmail;
 
         // Check if the user is authorized to edit the event
-        const user = await porModel.findOne({ outlookEmail: userEmail, club_org: details.club_org });
+        const user = await porModel.findOne({ outlookEmail: userEmail, board: details.board });
         if (!user) {
             return res.status(400).json({
-                message: "You are not authorized to edit this event, as you are not a part of this club/organization."
+                message: `You are not authorized to edit this event, as you are not a part of ${details.board} board`
             });
         }
 
-        const { title, club_org, startDateTime, endDateTime, description, venue, contactNumber } = req.body;
+        const { title, club_org, board,  startDateTime, endDateTime, description, venue, contactNumber } = req.body;
         const image = req.file;
 
         let fullImageUrl = details.imageURL;
@@ -255,6 +256,7 @@ const editEvent = async (req, res) => {
 
         if (title) details.title = title;
         if (club_org) details.club_org = club_org;
+        if (board) details.board = board;
         if (startDateTime) details.startDateTime = startDateTime;
         if (endDateTime) details.endDateTime = endDateTime;
         if (description) details.description = description;
@@ -298,10 +300,10 @@ const deleteEvent = async (req, res) => {
         const userEmail = req.user.outlookEmail;
         
         // check if the user is authorized to delete the event
-        const user = await porModel.findOne({ outlookEmail: userEmail, club_org: details.club_org });
+        const user = await porModel.findOne({ outlookEmail: userEmail, board: details.board });
         if (!user) {
             return res.status(400).json({
-                message: "You are not authorized to delete this event, as you are not a part of this club/organization."
+                message: `You are not authorized to delete this event, as you are not a part of ${details.board} board`
             });
         }
 

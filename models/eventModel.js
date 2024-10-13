@@ -8,6 +8,7 @@ const eventSchema = new mongoose.Schema({
     compressedImageURL: { type: String },
     description: { type: String },
     club_org: { type: String, required: true },
+    board: { type: String, required: true },
     startDateTime: { type: Date, required: true },
     endDateTime: { type: Date, required: true },
     venue: { type: String },

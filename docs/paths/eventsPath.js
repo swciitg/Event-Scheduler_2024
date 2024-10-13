@@ -65,6 +65,10 @@ const eventsPath = {
                                                     type: 'string',
                                                     example: 'Octaves'
                                                 },
+                                                board: {
+                                                    type: 'string',
+                                                    example: 'Cultural'
+                                                },
                                                 startDateTime: {
                                                     type: 'string',
                                                     example: '2024-10-17T19:00:00.000Z'
@@ -173,7 +177,7 @@ const eventsPath = {
                                     description: 'Image file',
                                 }
                             },
-                            required: ['title', 'club_org', 'startDateTime', 'endDateTime'],
+                            required: ['title', 'club_org', 'board', 'startDateTime', 'endDateTime'],
                         },
                     }
                 }
@@ -212,7 +216,7 @@ const eventsPath = {
                                     },
                                     message: {
                                         type: 'string',
-                                        example: 'Title, club_org, startDateTime and endDateTime are required fields'
+                                        example: 'Title, club_org, board, startDateTime, endDateTime are required fields'
                                     }
                                 }
                             }
