@@ -18,10 +18,10 @@ const uploadDir = path.resolve('uploads');
 
 // Base URL for serving static images
 // const baseURL = `${process.env.API_URL}${process.env.BASE_URL}`;
-let baseURL = process.env.BASE_URL;
-if (process.env.NODE_ENV === 'dev') {
-    baseURL = `${process.env.API_URL}${process.env.PORT}`;
-}
+// let baseURL = process.env.BASE_URL;
+// if (process.env.NODE_ENV === 'dev') {
+const baseURL = `${process.env.API_URL}${process.env.BASE_URL}`;
+// }
 
 // Get all events
 const getAllEvents = async (req, res) => {
