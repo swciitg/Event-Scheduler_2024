@@ -111,7 +111,7 @@ const getGroupedEvents = async (req, res) => {
     try {
         const events = await eventModel.find();
         const groupedEvents = groupEventsByCategory(events);
-        return res.json(groupedEvents);
+        return res.status(200).json(groupedEvents);
     } catch (error) {
         console.error("Error in getting grouped events", error.message);
         return res.status(500).json({

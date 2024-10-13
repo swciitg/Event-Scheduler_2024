@@ -1,6 +1,7 @@
 const eventPath = {
     '/:id': {
         get: {
+            "tags": ["Events"],
               "summary": "Get event by id",
               "description": "Retrieve details of a specific event using its ID.",
               "parameters": [
@@ -144,6 +145,7 @@ const eventPath = {
               }
         },
         put: {
+            "tags": ["Events"],
                 "summary": "Edit an existing event",
                 "description": "Update the details of an existing event using its ID.",
                 "parameters": [
@@ -294,6 +296,7 @@ const eventPath = {
                 }
         },
         delete: {
+            "tags": ["Events"],
             "summary": "Delete an existing event",
             "description": "Delete an event using its ID.",
             "parameters": [
