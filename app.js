@@ -10,6 +10,7 @@ import swaggerUi from "swagger-ui-express";
 import apiDocs from "./docs/apiDocs.js";
 
 import eventRouter from "./routers/eventRouter.js";
+import porRouter from "./routers/porRouter.js";
 import { NotFoundError } from "./errors/notFoundError.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { admin, adminRouter } from "./admin_panel/admin-config.js";
@@ -38,6 +39,7 @@ app.use((req, res, next) => {
 
 app.use(`${process.env.BASE_URL}/docs`, swaggerUi.serve, swaggerUi.setup(apiDocs));
 
+app.use(process.env.BASE_URL, porRouter);
 app.use(process.env.BASE_URL, eventRouter);
 
 app.use("*",(req,res) => {
