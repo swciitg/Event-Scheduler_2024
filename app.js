@@ -4,6 +4,10 @@ import http from "http";
 import dotenv from "dotenv";
 import path from "path";
 
+// docs
+import swaggerUi from "swagger-ui-express";
+import apiDocs from "./docs/apiDocs.js";
+
 import eventRouter from "./routers/eventRouter.js";
 import { NotFoundError } from "./errors/notFoundError.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
@@ -28,6 +32,8 @@ app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
     next();
 });
+
+app.use(`${process.env.BASE_URL}/docs`, swaggerUi.serve, swaggerUi.setup(apiDocs));
 
 app.use(process.env.BASE_URL, eventRouter);
 

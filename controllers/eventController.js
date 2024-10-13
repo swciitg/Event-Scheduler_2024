@@ -116,14 +116,15 @@ const postEvent = async (req, res) => {
 
         await newEvent.save();
         // return id of the newly created event for future reference
-        return res.json({
+        return res.status(201).json({
             saved_successfully: true,
             id: newEvent._id
         });
     } catch (error) {
         console.error("Error in posting event", error.message);
         return res.status(500).json({
-            saved_successfully: false
+            saved_successfully: false,
+            message: 'Internal Server error'
         });
     }
 };
