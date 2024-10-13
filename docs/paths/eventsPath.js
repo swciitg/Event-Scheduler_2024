@@ -65,9 +65,13 @@ const eventsPath = {
                                                     type: 'string',
                                                     example: 'Octaves'
                                                 },
-                                                dateTime: {
+                                                startDateTime: {
                                                     type: 'string',
                                                     example: '2024-10-17T19:00:00.000Z'
+                                                },
+                                                endDateTime: {
+                                                    type: 'string',
+                                                    example: '2024-10-17T21:00:00.000Z'
                                                 },
                                                 venue: {
                                                     type: 'string',
@@ -145,9 +149,13 @@ const eventsPath = {
                                     type: 'string',
                                     example: 'Zenith is the annual club orientation event of Octaves, IITG.'
                                 },
-                                dateTime: {
+                                startDateTime: {
                                     type: 'string',
                                     example: '2024-10-17T19:00:00.000Z',
+                                },
+                                endDateTime: {
+                                    type: 'string',
+                                    example: '2024-10-17T21:00:00.000Z',
                                 },
                                 venue: {
                                     type: 'string',
@@ -165,7 +173,7 @@ const eventsPath = {
                                     description: 'Image file',
                                 }
                             },
-                            required: ['title', 'club_org', 'dateTime']
+                            required: ['title', 'club_org', 'startDateTime', 'endDateTime'],
                         },
                     }
                 }
@@ -204,7 +212,7 @@ const eventsPath = {
                                     },
                                     message: {
                                         type: 'string',
-                                        example: 'Title, club_org and dateTime are required fields'
+                                        example: 'Title, club_org, startDateTime and endDateTime are required fields'
                                     }
                                 }
                             }

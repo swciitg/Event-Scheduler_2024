@@ -66,9 +66,13 @@ const eventPath = {
                                         "type": "string",
                                         "example": "Octaves"
                                     },
-                                    "dateTime": {
+                                    "startDateTime": {
                                         "type": "string",
                                         "example": "2024-10-17T19:00:00.000Z"
+                                    },
+                                    "endDateTime": {
+                                        "type": "string",
+                                        "example": "2024-10-17T22:00:00.000Z"
                                     },
                                     "venue": {
                                         "type": "string",
@@ -184,9 +188,13 @@ const eventPath = {
                             "type": "string",
                             "example": "Zenith is the annual club orientation event of Octaves, IITG."
                         },
-                        "dateTime": {
+                        "startDateTime": {
                             "type": "string",
                             "example": "2024-10-17T19:00:00.000Z"
+                        },
+                        "endDateTime": {
+                            "type": "string",
+                            "example": "2024-10-17T22:00:00.000Z"
                         },
                         "venue": {
                             "type": "string",

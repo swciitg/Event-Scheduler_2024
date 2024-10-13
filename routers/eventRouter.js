@@ -10,6 +10,8 @@ const eventRouter = express.Router();
 eventRouter.get("/", verifyUserInfo, EventController.getAllEvents);
 eventRouter.post("/", getUserInfo, uploadAndParse, validateEventPOR, EventController.postEvent);
 
+eventRouter.get("/categories", verifyUserInfo, EventController.getGroupedEvents);
+
 eventRouter.get("/:id", verifyUserInfo, EventController.getEvent);
 eventRouter.put("/:id", getUserInfo, uploadAndParse, EventController.editEvent);
 eventRouter.delete("/:id", getUserInfo, EventController.deleteEvent);

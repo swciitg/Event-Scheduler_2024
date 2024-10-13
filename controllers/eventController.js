@@ -4,6 +4,7 @@ import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
 import eventModel from "../models/eventModel.js";
 import porModel from "../models/porModel.js";
+import { definedCategories } from "../shared/constants.js";
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
@@ -26,9 +27,15 @@ if (process.env.NODE_ENV === 'dev') {
 const getAllEvents = async (req, res) => {
     try {
         const details = await eventModel.find();
+
+        // Sort events by startDateTime
+        const sortedDetails = details.sort((a, b) => {
+            return new Date(a.startDateTime) - new Date(b.startDateTime);
+        });
+
         return res.status(200).json({
             message: 'All events fetched successfully',
-            allEvents: details
+            allEvents: sortedDetails
         });
     } catch (error) {
         console.log("Error in getting all events");
@@ -74,18 +81,75 @@ const getEvent = async (req, res) => {
     }
 };
 
+const groupEventsByCategory = (events) => {
+    let groupedEvents = {};
+    for (let category of definedCategories) {
+        groupedEvents[category] = [];
+    }
+
+    for (let event of events) {
+        for (let category of event.categories) {
+            if (!groupedEvents[category]) {
+                groupedEvents[category] = [];
+            }
+            groupedEvents[category].push(event);
+        }
+    }
+
+    // sort events in each category by startDateTime
+    let sortedCategoryEvents = {};
+    for (let category in groupedEvents) {
+        sortedCategoryEvents[category] = groupedEvents[category].sort((a, b) => {
+            return new Date(a.startDateTime) - new Date(b.startDateTime);
+        });
+    }
+
+    return sortedCategoryEvents;
+}
+
+const getGroupedEvents = async (req, res) => {
+    try {
+        const events = await eventModel.find();
+        const groupedEvents = groupEventsByCategory(events);
+        return res.json(groupedEvents);
+    } catch (error) {
+        console.error("Error in getting grouped events", error.message);
+        return res.status(500).json({
+            message: 'Internal Server error'
+        });
+    }
+}
+
 // Post a new event
 const postEvent = async (req, res) => {
     try {
-        const { title, club_org, dateTime, description, venue, contactNumber } = req.body;
+        const { title, club_org, startDateTime, endDateTime, description, venue, contactNumber, categories } = req.body;
         const image = req.file;
 
-        if (!title || !club_org || !dateTime) {
+        if (!title || !club_org || !startDateTime || !endDateTime) {
             return res.status(400).json({
                 saved_successfully: false,
-                message: "Title, club_org, and dateTime are required fields.",
+                message: "Title, club_org, startDateTime and endDateTime are required"
             });
         }
+
+        // check if categories are valid
+
+        if (categories) {
+            for (let category of categories) {
+                if (!definedCategories.includes(category)) {
+                    return res.status(400).json({
+                        saved_successfully: false,
+                        message: `Invalid category: ${category}`
+                    });
+                }
+            }
+            // check if "All" category is present
+            if (!categories.includes("All")) {
+                categories.push("All");
+            }
+        }
+
 
         let compressedImageName = null;
         let fullImageUrl = null;
@@ -106,12 +170,14 @@ const postEvent = async (req, res) => {
         const newEvent = new eventModel({
             title,
             club_org,
-            dateTime,
+            startDateTime,
+            endDateTime,
             description, // Optional
             venue, // Optional
             contactNumber, // Optional
             imageURL: fullImageUrl,
-            compressedImageURL: compressedImageUrl // Will be null if no image
+            compressedImageURL: compressedImageUrl, // Will be null if no image
+            categories: categories ? categories : ["All"]
         });
 
         await newEvent.save();
@@ -154,7 +220,7 @@ const editEvent = async (req, res) => {
             });
         }
 
-        const { title, club_org, dateTime, description, venue, contactNumber } = req.body;
+        const { title, club_org, startDateTime, endDateTime, description, venue, contactNumber } = req.body;
         const image = req.file;
 
         let fullImageUrl = details.imageURL;
@@ -189,7 +255,8 @@ const editEvent = async (req, res) => {
 
         if (title) details.title = title;
         if (club_org) details.club_org = club_org;
-        if (dateTime) details.dateTime = dateTime;
+        if (startDateTime) details.startDateTime = startDateTime;
+        if (endDateTime) details.endDateTime = endDateTime;
         if (description) details.description = description;
         if (venue) details.venue = venue;
         if (contactNumber) details.contactNumber = contactNumber;
@@ -299,5 +366,6 @@ export const EventController = {
     postEvent,
     editEvent,
     deleteEvent,
-    deleteAllEvents
+    deleteAllEvents,
+    getGroupedEvents
 };
