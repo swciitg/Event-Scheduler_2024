@@ -361,6 +361,33 @@ const deleteAllEvents = async (req, res) => {
     }
 };
 
+// Delete all events that have already ended
+const deleteExpiredEvents = async () => {
+    try {
+        const details = await eventModel.find();
+        for (let detail of details) {
+            if (new Date(detail.endDateTime) < new Date()) {
+                if (detail.compressedImageURL) {
+                    const compressedImagePath = path.resolve(uploadDir, detail.compressedImageURL);
+                    if (fs.existsSync(compressedImagePath)) {
+                        fs.unlinkSync(compressedImagePath);
+                    }
+                }
+                if (detail.imageURL) {
+                    const imagePath = path.resolve(uploadDir, detail.imageURL);
+                    if (fs.existsSync(imagePath)) {
+                        fs.unlinkSync(imagePath);
+                    }
+                }
+                await eventModel.findByIdAndDelete(detail._id);
+            }
+        }
+        return "Expired events deleted successfully";
+    } catch (error) {
+        console.log("Error in deleting expired events", error.message);
+    }
+}
+
 // Export the controller
 export const EventController = {
     getAllEvents,
@@ -369,5 +396,6 @@ export const EventController = {
     editEvent,
     deleteEvent,
     deleteAllEvents,
-    getGroupedEvents
+    getGroupedEvents,
+    deleteExpiredEvents
 };

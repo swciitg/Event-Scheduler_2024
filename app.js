@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import http from "http";
 import dotenv from "dotenv";
 import path from "path";
+import cron from "node-cron";
 
 // docs
 import swaggerUi from "swagger-ui-express";
@@ -12,6 +13,8 @@ import eventRouter from "./routers/eventRouter.js";
 import { NotFoundError } from "./errors/notFoundError.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { admin, adminRouter } from "./admin_panel/admin-config.js";
+
+import { EventController } from "./controllers/eventController.js";
 
 dotenv.config();
 const __dirname = path.resolve();
@@ -56,6 +59,26 @@ server.listen(PORT, () => {
                 console.log("Error connecting to MongoDB");
                 console.log(err);
             });
+
+        // run cron job to delete expired events every day at 12:00 AM
+        try {
+            cron.schedule('0 0 * * *', async () => {
+                console.log("Running cron job to delete expired events");
+                await EventController.deleteExpiredEvents()
+                        .then((result) => {
+                            console.log("Expired events deleted");
+                        })
+                        .catch((err) => {
+                            console.log("Error deleting expired events");
+                            console.log(err);
+                        });
+            });
+        }
+        catch (e) {
+            console.log("Error running cron job");
+            console.log(e);
+        }
+        
     } catch (e) {
         console.log(e);
     }
