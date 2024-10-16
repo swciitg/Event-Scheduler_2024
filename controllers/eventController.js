@@ -393,15 +393,23 @@ const deleteExpiredEvents = async () => {
         for (let detail of details) {
             if (new Date(detail.endDateTime) < new Date()) {
                 if (detail.compressedImageURL) {
-                    const compressedImagePath = path.resolve(uploadDir, detail.compressedImageURL);
+                    // extract image name from URL
+                    const compressedImageName = detail.compressedImageURL.split('/').pop();
+                    const compressedImagePath = path.resolve(uploadDir, compressedImageName);
                     if (fs.existsSync(compressedImagePath)) {
                         fs.unlinkSync(compressedImagePath);
+                    }else{
+                        console.log(`compressed image not found: ${compressedImageName}`)
                     }
                 }
                 if (detail.imageURL) {
-                    const imagePath = path.resolve(uploadDir, detail.imageURL);
+                    // extract image name from URL
+                    const imageName = detail.imageURL.split('/').pop();
+                    const imagePath = path.resolve(uploadDir, imageName);
                     if (fs.existsSync(imagePath)) {
                         fs.unlinkSync(imagePath);
+                    }else{
+                        console.log(`image not found: ${imageName}`)
                     }
                 }
                 await eventModel.findByIdAndDelete(detail._id);
