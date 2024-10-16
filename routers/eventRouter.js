@@ -1,18 +1,19 @@
 import express from "express";
-import { EventControllers } from "../controllers/eventControllers.js";
-import { getUserInfo,verifyUserInfo } from "../middlewares/getUserInfo.js";
+import { EventController } from "../controllers/eventController.js";
+import { getUserInfo, verifyUserInfo } from "../middlewares/getUserInfo.js";
 import { validateEventPOR } from "../middlewares/validateEventPOR.js";
+import { uploadAndParse } from "../middlewares/uploadMiddleware.js";
 
 const eventRouter = express.Router();
 
-eventRouter.get("/events",verifyUserInfo, EventControllers.getEvents);
+// Routes
+eventRouter.get("/", verifyUserInfo, EventController.getAllEvents);
+eventRouter.post("/", getUserInfo, uploadAndParse, validateEventPOR, EventController.postEvent);
 
-eventRouter.get("/events/:id",verifyUserInfo, EventControllers.getEventById);
+eventRouter.get("/categories", verifyUserInfo, EventController.getGroupedEvents);
 
-eventRouter.post("/events",getUserInfo,validateEventPOR, EventControllers.postEvent);
-
-eventRouter.put("/events/:id",getUserInfo,validateEventPOR, EventControllers.updateEvent);
-
-eventRouter.delete("/events/:id",getUserInfo,validateEventPOR, EventControllers.deleteEvent);
+eventRouter.get("/:id", verifyUserInfo, EventController.getEvent);
+eventRouter.put("/:id", getUserInfo, uploadAndParse, EventController.editEvent);
+eventRouter.delete("/:id", getUserInfo, EventController.deleteEvent);
 
 export default eventRouter;

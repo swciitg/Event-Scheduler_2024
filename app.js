@@ -2,13 +2,44 @@ import express from "express";
 import mongoose from "mongoose";
 import http from "http";
 import dotenv from "dotenv";
-import eventRouter from "./routers/eventRouter";
+import path from "path";
+import cron from "node-cron";
+
+// docs
+import swaggerUi from "swagger-ui-express";
+import apiDocs from "./docs/apiDocs.js";
+
+import eventRouter from "./routers/eventRouter.js";
+import porRouter from "./routers/porRouter.js";
+import { NotFoundError } from "./errors/notFoundError.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
+import { admin, adminRouter } from "./admin_panel/admin-config.js";
+
+import { EventController } from "./controllers/eventController.js";
+
+dotenv.config();
+const __dirname = path.resolve();
 
 mongoose.set("strictQuery", false);
 
 const app = express();
 const server = http.createServer(app);
 
+app.use(`${process.env.BASE_URL}/admin`, adminRouter);
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(`${process.env.BASE_URL}/uploads`, express.static(path.resolve('uploads')));
+
+// log all requests
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
+
+app.use(`${process.env.BASE_URL}/docs`, swaggerUi.serve, swaggerUi.setup(apiDocs));
+
+app.use(process.env.BASE_URL, porRouter);
 app.use(process.env.BASE_URL, eventRouter);
 
 app.use("*",(req,res) => {
@@ -21,8 +52,35 @@ const PORT = process.env.PORT || 9010;
 
 server.listen(PORT, () => {
     try {
-        mongoose.connect(process.env.DATABASE_URI + '/' + process.env.DATABASE_NAME);
-        console.log("Connected to MongoDB");
+        const mongoURL = process.env.MONGO_URI;
+        mongoose.connect(mongoURL) 
+            .then(() => {
+                console.log("Connected to MongoDB");
+            })
+            .catch((err) => {
+                console.log("Error connecting to MongoDB");
+                console.log(err);
+            });
+
+        // run cron job to delete expired events every day at 12:00 AM
+        try {
+            cron.schedule('0 0 * * *', async () => {
+                console.log("Running cron job to delete expired events");
+                await EventController.deleteExpiredEvents()
+                        .then((result) => {
+                            console.log("Expired events deleted");
+                        })
+                        .catch((err) => {
+                            console.log("Error deleting expired events");
+                            console.log(err);
+                        });
+            });
+        }
+        catch (e) {
+            console.log("Error running cron job");
+            console.log(e);
+        }
+        
     } catch (e) {
         console.log(e);
     }
