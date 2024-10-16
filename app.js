@@ -13,6 +13,7 @@ import eventRouter from "./routers/eventRouter.js";
 import porRouter from "./routers/porRouter.js";
 import adminRouter from "./routers/adminRouter.js";
 import docsRouter from "./routers/docsRouter.js";
+import uploadsRouter from "./routers/uploadsRouter.js";
 
 import { NotFoundError } from "./errors/notFoundError.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
@@ -33,7 +34,7 @@ app.use(process.env.BASE_URL, adminRouter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(`${process.env.BASE_URL}uploads`, express.static(path.resolve('uploads')));
+app.use(process.env.BASE_URL, uploadsRouter);
 
 // log all requests
 app.use((req, res, next) => {
