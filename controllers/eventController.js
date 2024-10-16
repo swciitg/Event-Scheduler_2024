@@ -4,7 +4,7 @@ import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
 import eventModel from "../models/eventModel.js";
 import porModel from "../models/porModel.js";
-import { definedCategories } from "../shared/constants.js";
+import { definedCategories, swcDeployUrl } from "../shared/constants.js";
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import mime from 'mime';
@@ -21,7 +21,7 @@ const uploadDir = path.resolve('uploads');
 // const baseURL = `${process.env.API_URL}${process.env.BASE_URL}`;
 // let baseURL = process.env.BASE_URL;
 // if (process.env.NODE_ENV === 'dev') {
-const baseURL = `${process.env.API_URL}${process.env.BASE_URL}`;
+const baseURL = swcDeployUrl;
 // }
 
 // Get all events
@@ -179,8 +179,8 @@ const postEvent = async (req, res) => {
             fs.writeFileSync(compressedImagePath, compressedImage);
 
             // Build full URLs
-            fullImageUrl = `${baseURL}uploads/${image.filename}`;
-            compressedImageUrl = `${baseURL}uploads/${compressedImageName}`;
+            fullImageUrl = `${baseURL}/uploads/${image.filename}`;
+            compressedImageUrl = `${baseURL}/uploads/${compressedImageName}`;
         }
 
         const newEvent = new eventModel({
@@ -275,8 +275,8 @@ const editEvent = async (req, res) => {
             fs.writeFileSync(compressedImagePathNew, compressedImage);
 
             // Build full URLs for new images
-            fullImageUrl = `${baseURL}uploads/${image.filename}`;
-            compressedImageUrl = `${baseURL}uploads/${compressedImageName}`;
+            fullImageUrl = `${baseURL}/uploads/${image.filename}`;
+            compressedImageUrl = `${baseURL}/uploads/${compressedImageName}`;
         }
 
         if (title) details.title = title;

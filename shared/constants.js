@@ -3,6 +3,8 @@ export const onestopUserEndpoint = 'https://swc.iitg.ac.in/onestop/api/v3/user'
 
 export const guestUserEmail = "guest@iitg.ac.in";
 
+export const swcDeployUrl = "https://swc.iitg.ac.in/events";
+
 export const definedCategories = [
     "Academic",
     "Cultural",
