@@ -50,6 +50,25 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 9010;
 
+// run cron job to delete expired events every day at 12:00 AM
+try {
+    cron.schedule('0 0 * * *', async () => {
+        console.log("Running cron job to delete expired events");
+        await EventController.deleteExpiredEvents()
+                .then((result) => {
+                    console.log("Expired events deleted");
+                })
+                .catch((err) => {
+                    console.log("Error deleting expired events");
+                    console.log(err);
+                });
+    });
+}
+catch (e) {
+    console.log("Error running cron job");
+    console.log(e);
+}
+
 server.listen(PORT, () => {
     try {
         const mongoURL = process.env.MONGO_URI;
@@ -60,27 +79,7 @@ server.listen(PORT, () => {
             .catch((err) => {
                 console.log("Error connecting to MongoDB");
                 console.log(err);
-            });
-
-        // run cron job to delete expired events every day at 12:00 AM
-        try {
-            cron.schedule('0 0 * * *', async () => {
-                console.log("Running cron job to delete expired events");
-                await EventController.deleteExpiredEvents()
-                        .then((result) => {
-                            console.log("Expired events deleted");
-                        })
-                        .catch((err) => {
-                            console.log("Error deleting expired events");
-                            console.log(err);
-                        });
-            });
-        }
-        catch (e) {
-            console.log("Error running cron job");
-            console.log(e);
-        }
-        
+            });   
     } catch (e) {
         console.log(e);
     }
