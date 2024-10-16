@@ -33,7 +33,7 @@ app.use(process.env.BASE_URL, adminRouter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(`${process.env.BASE_URL}/uploads`, express.static(path.resolve('uploads')));
+app.use(`${process.env.BASE_URL}uploads`, express.static(path.resolve('uploads')));
 
 // log all requests
 app.use((req, res, next) => {

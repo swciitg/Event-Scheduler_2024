@@ -170,8 +170,8 @@ const postEvent = async (req, res) => {
             fs.writeFileSync(compressedImagePath, compressedImage);
 
             // Build full URLs
-            fullImageUrl = `${baseURL}/uploads/${image.filename}`;
-            compressedImageUrl = `${baseURL}/uploads/${compressedImageName}`;
+            fullImageUrl = `${baseURL}uploads/${image.filename}`;
+            compressedImageUrl = `${baseURL}uploads/${compressedImageName}`;
         }
 
         const newEvent = new eventModel({
@@ -257,8 +257,8 @@ const editEvent = async (req, res) => {
             fs.writeFileSync(compressedImagePathNew, compressedImage);
 
             // Build full URLs for new images
-            fullImageUrl = `${baseURL}/uploads/${image.filename}`;
-            compressedImageUrl = `${baseURL}/uploads/${compressedImageName}`;
+            fullImageUrl = `${baseURL}uploads/${image.filename}`;
+            compressedImageUrl = `${baseURL}uploads/${compressedImageName}`;
         }
 
         if (title) details.title = title;
