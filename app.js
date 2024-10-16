@@ -6,14 +6,17 @@ import path from "path";
 import cron from "node-cron";
 
 // docs
-import swaggerUi from "swagger-ui-express";
-import apiDocs from "./docs/apiDocs.js";
+// import swaggerUi from "swagger-ui-express";
+// import apiDocs from "./docs/apiDocs.js";
 
 import eventRouter from "./routers/eventRouter.js";
 import porRouter from "./routers/porRouter.js";
+import adminRouter from "./routers/adminRouter.js";
+import docsRouter from "./routers/docsRouter.js";
+
 import { NotFoundError } from "./errors/notFoundError.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
-import { admin, adminRouter } from "./admin_panel/admin-config.js";
+// import { admin, adminRouter } from "./admin_panel/admin-config.js";
 
 import { EventController } from "./controllers/eventController.js";
 
@@ -25,7 +28,8 @@ mongoose.set("strictQuery", false);
 const app = express();
 const server = http.createServer(app);
 
-app.use(`${process.env.BASE_URL}/admin`, adminRouter);
+// app.use(`${process.env.BASE_URL}/admin`, adminRouter);
+app.use(process.env.BASE_URL, adminRouter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -37,7 +41,8 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(`${process.env.BASE_URL}/docs`, swaggerUi.serve, swaggerUi.setup(apiDocs));
+// app.use(`${process.env.BASE_URL}/docs`, swaggerUi.serve, swaggerUi.setup(apiDocs));
+app.use(process.env.BASE_URL, docsRouter);
 
 app.use(process.env.BASE_URL, porRouter);
 app.use(process.env.BASE_URL, eventRouter);
