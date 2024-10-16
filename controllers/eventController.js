@@ -7,6 +7,7 @@ import porModel from "../models/porModel.js";
 import { definedCategories } from "../shared/constants.js";
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import mime from 'mime';
 
 dotenv.config();
 
@@ -163,6 +164,14 @@ const postEvent = async (req, res) => {
         let compressedImageUrl = null;
 
         if (image) {
+            // check if image is jpg, jpeg or png, else return error
+            const mimeType = mime.lookup(image.path);
+            if (!mimeType || !mimeType.match(/image\/(jpeg|jpg|png)/)) {
+                return res.status(400).json({
+                    saved_successfully: false,
+                    message: "Invalid image format. Only jpg, jpeg and png are allowed"
+                });
+            }
             const compressedImage = await sharp(image.path)
                 .toBuffer();
             compressedImageName = uuidv4() + "-compressed.jpg";
@@ -170,8 +179,8 @@ const postEvent = async (req, res) => {
             fs.writeFileSync(compressedImagePath, compressedImage);
 
             // Build full URLs
-            fullImageUrl = `${baseURL}/uploads/${image.filename}`;
-            compressedImageUrl = `${baseURL}/uploads/${compressedImageName}`;
+            fullImageUrl = `${baseURL}uploads/${image.filename}`;
+            compressedImageUrl = `${baseURL}uploads/${compressedImageName}`;
         }
 
         const newEvent = new eventModel({
@@ -236,6 +245,15 @@ const editEvent = async (req, res) => {
 
         if (image) {
 
+            // Check if image is jpg, jpeg or png and is parsable by sharp, else return error
+            const mimeType = mime.lookup(image.path);
+            if (!mimeType || !mimeType.match(/image\/(jpeg|jpg|png)/)) {
+                return res.status(400).json({
+                    saved_successfully: false,
+                    message: "Invalid image format. Only jpg, jpeg and png are allowed"
+                });
+            }
+
             // Delete old images if they exist
             if (details.compressedImageURL) {
                 const compressedImagePath = path.resolve(uploadDir, details.compressedImageURL);
@@ -257,8 +275,8 @@ const editEvent = async (req, res) => {
             fs.writeFileSync(compressedImagePathNew, compressedImage);
 
             // Build full URLs for new images
-            fullImageUrl = `${baseURL}/uploads/${image.filename}`;
-            compressedImageUrl = `${baseURL}/uploads/${compressedImageName}`;
+            fullImageUrl = `${baseURL}uploads/${image.filename}`;
+            compressedImageUrl = `${baseURL}uploads/${compressedImageName}`;
         }
 
         if (title) details.title = title;
