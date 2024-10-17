@@ -11,6 +11,7 @@ export const definedCategories = [
     "Technical",
     "Sports",
     "Welfare",
+    "SAIL",
     "Miscellaneous",
     "SWC",
     "All"
