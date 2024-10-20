@@ -16,3 +16,14 @@ export const definedCategories = [
     "SWC",
     "All"
 ]
+
+export const definedBoards = [
+    "Academic",
+    "Cultural",
+    "Technical",
+    "Sports",
+    "Welfare",
+    "SAIL",
+    "HAB",
+    "SWC"
+]

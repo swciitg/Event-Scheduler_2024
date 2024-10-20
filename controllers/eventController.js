@@ -227,13 +227,22 @@ const editEvent = async (req, res) => {
             return res.status(404).json({ message: "Event not found" });
         }
 
-        const userEmail = req.user.outlookEmail;
-
         // Check if the user is authorized to edit the event
-        const user = await porModel.findOne({ outlookEmail: userEmail, board: details.board });
-        if (!user) {
+        const outlookEmail = req.user.outlookEmail;
+        const por = await porModel.findOne({});
+        const boardAdmins = por[req.body.board].admins;
+
+        const clubOrgs = por[board].clubs_orgs;
+        if (!clubOrgs.includes(req.body.club_org)) {
+            console.log("Club/Org not found");
             return res.status(400).json({
-                message: `You are not authorized to edit this event, as you are not a part of ${details.board} board`
+                success: false,
+                message: `The club/organization ${req.body.club_org} is not part of the ${req.body.board} board`
+            });
+        }
+        if (!boardAdmins.includes(outlookEmail)) {
+            return res.status(400).json({
+                message: `You are not authorized to edit this event, as you are not a part of ${req.body.board} board`
             });
         }
 
@@ -321,14 +330,23 @@ const deleteEvent = async (req, res) => {
                 message: 'Event not found'
             });
         }
-
-        const userEmail = req.user.outlookEmail;
         
-        // check if the user is authorized to delete the event
-        const user = await porModel.findOne({ outlookEmail: userEmail, board: details.board });
-        if (!user) {
+        // Check if the user is authorized to edit the event
+        const outlookEmail = req.user.outlookEmail;
+        const por = await porModel.findOne({});
+        const boardAdmins = por[req.body.board].admins;
+
+        const clubOrgs = por[board].clubs_orgs;
+        if (!clubOrgs.includes(req.body.club_org)) {
+            console.log("Club/Org not found");
             return res.status(400).json({
-                message: `You are not authorized to delete this event, as you are not a part of ${details.board} board`
+                success: false,
+                message: `The club/organization ${req.body.club_org} is not part of the ${req.body.board} board`
+            });
+        }
+        if (!boardAdmins.includes(outlookEmail)) {
+            return res.status(400).json({
+                message: `You are not authorized to edit this event, as you are not a part of ${req.body.board} board`
             });
         }
 

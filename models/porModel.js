@@ -1,10 +1,18 @@
 import mongoose from "mongoose";
+import { definedBoards } from "../shared/constants.js";
 
-const porSchema = new mongoose.Schema({
-    outlookEmail: { type: String, required: true },
-    board: { type: String, required: true },
-    position: { type: String, required: true },
-});
+const porSchema = new mongoose.Schema(definedBoards.map((board) => {
+    return {
+        [`${board}`]: {
+            'admins' : {
+                type: [String],
+            },
+            'clubs_orgs' : {
+                type: [String],
+            },
+        }
+    };
+}));
 
 const porModel = mongoose.model("por", porSchema);
 
