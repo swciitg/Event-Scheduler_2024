@@ -1,11 +1,27 @@
+import { definedBoards } from "../../shared/constants.js";
+
+const porProperties = definedBoards.reduce((acc, board) => {
+    acc[board] = {
+        'admins': {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        },
+        'clubs_orgs': {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        }
+    }
+    return acc;
+}
+, {});
+
 const porSchema = {
     type: 'object',
-    properties: {
-        _id : { type: 'string', example: '5f3f1f2d6c1c8d0017d3f3a8' },
-        outlookEmail: { type: 'string', example: 'p.niraj@iitg.ac.in' },
-        board : { type: 'string', example: 'Cultural' },
-        position : { type: 'string', example: 'Secretary' },
-    }
+    properties: porProperties
 }
 
 export default porSchema;
