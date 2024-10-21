@@ -4,7 +4,7 @@ import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
 import eventModel from "../models/eventModel.js";
 import porModel from "../models/porModel.js";
-import { definedCategories, swcDeployUrl } from "../shared/constants.js";
+import { definedCategories, definedBoards, swcDeployUrl } from "../shared/constants.js";
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import mime from 'mime';
@@ -227,22 +227,32 @@ const editEvent = async (req, res) => {
             return res.status(404).json({ message: "Event not found" });
         }
 
+        const eventBoard = details.board;
+        const event_club_org = details.club_org;
+
+        // check if board is valid
+        if (!definedBoards.includes(eventBoard)) {
+            return res.status(400).json({
+                message: `Invalid board: ${eventBoard}`
+            });
+        }
+
         // Check if the user is authorized to edit the event
         const outlookEmail = req.user.outlookEmail;
         const por = await porModel.findOne({});
-        const boardAdmins = por[req.body.board].admins;
+        const boardAdmins = por[eventBoard].admins;
 
-        const clubOrgs = por[board].clubs_orgs;
-        if (!clubOrgs.includes(req.body.club_org)) {
+        const clubOrgs = por[eventBoard].clubs_orgs;
+        if (!clubOrgs.includes(event_club_org)) {
             console.log("Club/Org not found");
             return res.status(400).json({
                 success: false,
-                message: `The club/organization ${req.body.club_org} is not part of the ${req.body.board} board`
+                message: `The club/organization ${event_club_org} is not part of the ${eventBoard} board`
             });
         }
         if (!boardAdmins.includes(outlookEmail)) {
             return res.status(400).json({
-                message: `You are not authorized to edit this event, as you are not a part of ${req.body.board} board`
+                message: `You are not authorized to edit this event, as you are not a part of ${eventBoard} board`
             });
         }
 
@@ -303,6 +313,7 @@ const editEvent = async (req, res) => {
         await details.save();
         return res.json({
             edited_successfully: true,
+            id: details._id
         });
     } catch (error) {
         console.error("Error in editing event: ", error.message);
@@ -330,23 +341,33 @@ const deleteEvent = async (req, res) => {
                 message: 'Event not found'
             });
         }
+
+        const board = details.board;
+        const club_org = details.club_org;
+
+        // check if board is valid
+        if (!definedBoards.includes(board)) {
+            return res.status(400).json({
+                message: `Invalid board: ${board}`
+            });
+        }
         
         // Check if the user is authorized to edit the event
         const outlookEmail = req.user.outlookEmail;
         const por = await porModel.findOne({});
-        const boardAdmins = por[req.body.board].admins;
+        const boardAdmins = por[board].admins;
 
         const clubOrgs = por[board].clubs_orgs;
-        if (!clubOrgs.includes(req.body.club_org)) {
-            console.log("Club/Org not found");
+        if (!clubOrgs.includes(club_org)) {
+            console.log("Club/Org not found in board");
             return res.status(400).json({
                 success: false,
-                message: `The club/organization ${req.body.club_org} is not part of the ${req.body.board} board`
+                message: `The club/organization ${club_org} is not part of the ${board} board`
             });
         }
         if (!boardAdmins.includes(outlookEmail)) {
             return res.status(400).json({
-                message: `You are not authorized to edit this event, as you are not a part of ${req.body.board} board`
+                message: `You are not authorized to edit this event, as you are not a part of ${board} board`
             });
         }
 
@@ -409,28 +430,36 @@ const deleteExpiredEvents = async () => {
     try {
         const details = await eventModel.find();
         for (let detail of details) {
-            if (new Date(detail.endDateTime) < new Date()) {
-                if (detail.compressedImageURL) {
-                    // extract image name from URL
-                    const compressedImageName = detail.compressedImageURL.split('/').pop();
-                    const compressedImagePath = path.resolve(uploadDir, compressedImageName);
-                    if (fs.existsSync(compressedImagePath)) {
-                        fs.unlinkSync(compressedImagePath);
-                    }else{
-                        console.log(`compressed image not found: ${compressedImageName}`)
+            try {
+                if (new Date(detail.endDateTime) < new Date()) {
+                    if (detail.compressedImageURL) {
+                        // extract image name from URL
+                        const compressedImageName = detail.compressedImageURL.split('/').pop();
+                        const compressedImagePath = path.resolve(uploadDir, compressedImageName);
+                        if (fs.existsSync(compressedImagePath)) {
+                            fs.unlinkSync(compressedImagePath);
+                        }else{
+                            console.log(`compressed image not found: ${compressedImageName}`)
+                        }
+                    }
+                    if (detail.imageURL) {
+                        // extract image name from URL
+                        const imageName = detail.imageURL.split('/').pop();
+                        const imagePath = path.resolve(uploadDir, imageName);
+                        if (fs.existsSync(imagePath)) {
+                            fs.unlinkSync(imagePath);
+                        }else{
+                            console.log(`image not found: ${imageName}`)
+                        }
+                    }
+                    try {
+                        await eventModel.findByIdAndDelete(detail._id);
+                    } catch (error) {
+                        console.log("Error in deleting expired event automatically", error.message);
                     }
                 }
-                if (detail.imageURL) {
-                    // extract image name from URL
-                    const imageName = detail.imageURL.split('/').pop();
-                    const imagePath = path.resolve(uploadDir, imageName);
-                    if (fs.existsSync(imagePath)) {
-                        fs.unlinkSync(imagePath);
-                    }else{
-                        console.log(`image not found: ${imageName}`)
-                    }
-                }
-                await eventModel.findByIdAndDelete(detail._id);
+            }catch (error) {
+                console.log("Error in deleting expired event automatically", detail, error.message);
             }
         }
         return "Expired events deleted successfully";
