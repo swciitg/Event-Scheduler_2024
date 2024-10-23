@@ -11,8 +11,13 @@ services:
                         - "9343:8008"
                 env_file:
                         - .env
+                volumes:
+                        - eventsimages:/home/node/app/uploads
 
 networks:
     default:
         external:
             name: backend_default
+
+volumes:
+        eventsimages:
