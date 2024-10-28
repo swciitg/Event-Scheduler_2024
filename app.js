@@ -58,7 +58,7 @@ const PORT = process.env.PORT || 9010;
 
 // run cron job to delete expired events every day at 11:59 PM IST
 try {
-    cron.schedule("50 02 * * *", async () => {
+    cron.schedule("40 20 * * *", async () => {
         console.log("Running cron job to delete expired events");
         await EventController.deleteExpiredEvents()
                 .then((result) => {
@@ -68,10 +68,10 @@ try {
                     console.log("Error deleting expired events");
                     console.log(err);
                 });
-    }
-    // }, {
-    //     timezone: "Asia/Kolkata"
     // }
+    }, {
+        timezone: "Asia/Kolkata"
+    }
     );
 }
 catch (e) {
