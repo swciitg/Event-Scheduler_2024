@@ -6,8 +6,16 @@ export const validateEventPOR = async (req, res, next) => {
         console.log(`${req.user.outlookEmail} posted or made changes to an event for ${req.body.club_org}`);
         const outlookEmail = req.user.outlookEmail;
         const board = req.body.board;
-
-        const por = await eventPorModel.findOne({});
+        let por = null;
+        try {
+            por = await eventPorModel.findOne({});
+        } catch (error) {
+            console.log(error.message);
+            return res.status(400).json({
+                success: false,
+                message: "Error fetching POR data from database"
+            });
+        }
         const boardAdmins = por[board].admins;
 
         const clubOrgs = por[board].clubs_orgs;
@@ -29,5 +37,9 @@ export const validateEventPOR = async (req, res, next) => {
     }
     catch (error) {
         console.log(error.message);
+        return res.status(400).json({
+            success: false,
+            message: "Error validating POR"
+        });
     }
 }

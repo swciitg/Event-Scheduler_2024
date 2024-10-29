@@ -247,7 +247,16 @@ const editEvent = async (req, res) => {
 
         // Check if the user is authorized to edit the event
         const outlookEmail = req.user.outlookEmail;
-        const por = await eventPorModel.findOne({});
+        let por = null;
+        try{
+            por = await eventPorModel.findOne({});
+        }catch(error){
+            console.log(error.message);
+            return res.status(400).json({
+                success: false,
+                message: "Error fetching POR data from database"
+            });
+        }
         const boardAdmins = por[eventBoard].admins;
         const clubOrgs = por[eventBoard].clubs_orgs;
 
@@ -372,7 +381,16 @@ const deleteEvent = async (req, res) => {
         
         // Check if the user is authorized to edit the event
         const outlookEmail = req.user.outlookEmail;
-        const por = await eventPorModel.findOne({});
+        let por = null;
+        try{
+            por = await eventPorModel.findOne({});
+        }catch(error){
+            console.log(error.message);
+            return res.status(400).json({
+                success: false,
+                message: "Error fetching POR data from database"
+            });
+        }
         const boardAdmins = por[board].admins;
 
         const clubOrgs = por[board].clubs_orgs;
