@@ -142,7 +142,6 @@ const postEvent = async (req, res) => {
         }
 
         // check if categories are valid
-
         if (categories) {
             for (let category of categories) {
                 if (!definedCategories.includes(category)) {
@@ -158,13 +157,11 @@ const postEvent = async (req, res) => {
             }
         }
 
-
-        let compressedImageName = null;
-        let fullImageUrl = null;
-        let compressedImageUrl = null;
+        let imageURL = null;
+        let compressedImageURL = null;
 
         if (image) {
-            // check if image is jpg, jpeg or png, else return error
+            // Check if image is jpg, jpeg, or png
             const mimeType = mime.lookup(image.path);
             if (!mimeType || !mimeType.match(/image\/(jpeg|jpg|png)/)) {
                 return res.status(400).json({
@@ -172,15 +169,25 @@ const postEvent = async (req, res) => {
                     message: "Invalid image format. Only jpg, jpeg and png are allowed"
                 });
             }
-            const compressedImage = await sharp(image.path)
+
+            const imageUUID = uuidv4();
+            const originalImagePath = path.resolve(uploadDir, `${imageUUID}.jpg`);
+            const compressedImagePath = path.resolve(uploadDir, `${imageUUID}-compressed.jpg`);
+
+            const compressedImageBuffer = await sharp(image.path)
+                .jpeg({ quality: 100 })
                 .toBuffer();
-            compressedImageName = uuidv4() + "-compressed.jpg";
-            const compressedImagePath = path.resolve(uploadDir, compressedImageName);
-            fs.writeFileSync(compressedImagePath, compressedImage);
+            fs.writeFileSync(originalImagePath, compressedImageBuffer);
+
+            // save compressed image
+            const furtherCompressedBuffer = await sharp(compressedImageBuffer)
+                .jpeg({ quality: 60 }) // Further reduce quality for additional compression
+                .toBuffer();
+            fs.writeFileSync(compressedImagePath, furtherCompressedBuffer);
 
             // Build full URLs
-            fullImageUrl = `${baseURL}/uploads/${image.filename}`;
-            compressedImageUrl = `${baseURL}/uploads/${compressedImageName}`;
+            imageURL = `${baseURL}/uploads/${imageUUID}.jpg`;
+            compressedImageURL = `${baseURL}/uploads/${imageUUID}-compressed.jpg`;
         }
 
         const newEvent = new eventModel({
@@ -192,13 +199,14 @@ const postEvent = async (req, res) => {
             description, // Optional
             venue, // Optional
             contactNumber, // Optional
-            imageURL: fullImageUrl,
-            compressedImageURL: compressedImageUrl, // Will be null if no image
+            imageURL,
+            compressedImageURL,
             categories: categories ? categories : ["All"]
         });
 
         await newEvent.save();
-        // return id of the newly created event for future reference
+
+        // Return the ID of the newly created event
         return res.status(201).json({
             saved_successfully: true,
             id: newEvent._id
@@ -230,7 +238,7 @@ const editEvent = async (req, res) => {
         const eventBoard = details.board;
         const event_club_org = details.club_org;
 
-        // check if board is valid
+        // Check if board is valid
         if (!definedBoards.includes(eventBoard)) {
             return res.status(400).json({
                 message: `Invalid board: ${eventBoard}`
@@ -241,10 +249,9 @@ const editEvent = async (req, res) => {
         const outlookEmail = req.user.outlookEmail;
         const por = await porModel.findOne({});
         const boardAdmins = por[eventBoard].admins;
-
         const clubOrgs = por[eventBoard].clubs_orgs;
+
         if (!clubOrgs.includes(event_club_org)) {
-            console.log("Club/Org not found");
             return res.status(400).json({
                 success: false,
                 message: `The club/organization ${event_club_org} is not part of the ${eventBoard} board`
@@ -256,15 +263,14 @@ const editEvent = async (req, res) => {
             });
         }
 
-        const { title, club_org, board,  startDateTime, endDateTime, description, venue, contactNumber } = req.body;
+        const { title, club_org, board, startDateTime, endDateTime, description, venue, contactNumber } = req.body;
         const image = req.file;
 
         let fullImageUrl = details.imageURL;
         let compressedImageUrl = details.compressedImageURL;
 
         if (image) {
-
-            // Check if image is jpg, jpeg or png and is parsable by sharp, else return error
+            // Check if image format is valid
             const mimeType = mime.lookup(image.path);
             if (!mimeType || !mimeType.match(/image\/(jpeg|jpg|png)/)) {
                 return res.status(400).json({
@@ -275,29 +281,42 @@ const editEvent = async (req, res) => {
 
             // Delete old images if they exist
             if (details.compressedImageURL) {
-                const compressedImagePath = path.resolve(uploadDir, details.compressedImageURL);
-                if (fs.existsSync(compressedImagePath)) {
-                    fs.unlinkSync(compressedImagePath);
+                console.log("Deleting old compressed image");
+                const compressedImagePathOld = path.resolve(uploadDir, details.compressedImageURL.split('/').pop());
+                if (fs.existsSync(compressedImagePathOld)) {
+                    fs.unlinkSync(compressedImagePathOld);
                 }
             }
             if (details.imageURL) {
-                const imagePath = path.resolve(uploadDir, details.imageURL);
-                if (fs.existsSync(imagePath)) {
-                    fs.unlinkSync(imagePath);
+                console.log("Deleting old image");
+                const imagePathOld = path.resolve(uploadDir, details.imageURL.split('/').pop());
+                if (fs.existsSync(imagePathOld)) {
+                    fs.unlinkSync(imagePathOld);
                 }
             }
 
-            // Save new image
-            const compressedImage = await sharp(image.path).toBuffer();
-            const compressedImageName = uuidv4() + "-compressed.jpg";
-            const compressedImagePathNew = path.resolve(uploadDir, compressedImageName);
-            fs.writeFileSync(compressedImagePathNew, compressedImage);
+            // Generate a single UUID for both images
+            const imageUUID = uuidv4();
+            const originalImagePathNew = path.resolve(uploadDir, `${imageUUID}.jpg`);
+            const compressedImagePathNew = path.resolve(uploadDir, `${imageUUID}-compressed.jpg`);
 
-            // Build full URLs for new images
-            fullImageUrl = `${baseURL}/uploads/${image.filename}`;
-            compressedImageUrl = `${baseURL}/uploads/${compressedImageName}`;
+            const compressedImageBuffer = await sharp(image.path)
+                .jpeg({ quality: 100 })
+                .toBuffer();
+            fs.writeFileSync(originalImagePathNew, compressedImageBuffer);
+
+            // compress and save the image
+            const furtherCompressedBuffer = await sharp(compressedImageBuffer)
+                .jpeg({ quality: 60 })
+                .toBuffer();
+            fs.writeFileSync(compressedImagePathNew, furtherCompressedBuffer);
+
+            // Update URLs
+            fullImageUrl = `${baseURL}/uploads/${imageUUID}.jpg`;
+            compressedImageUrl = `${baseURL}/uploads/${imageUUID}-compressed.jpg`;
         }
 
+        // Update event details if provided
         if (title) details.title = title;
         if (club_org) details.club_org = club_org;
         if (board) details.board = board;
@@ -317,7 +336,6 @@ const editEvent = async (req, res) => {
         });
     } catch (error) {
         console.error("Error in editing event: ", error.message);
-        console.log(error);
         return res.status(500).json({
             edited_successfully: false,
         });
