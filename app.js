@@ -10,7 +10,7 @@ import cron from "node-cron";
 // import apiDocs from "./docs/apiDocs.js";
 
 import eventRouter from "./routers/eventRouter.js";
-import porRouter from "./routers/porRouter.js";
+import eventPorRouter from "./routers/eventPorRouter.js";
 import adminRouter from "./routers/adminRouter.js";
 import docsRouter from "./routers/docsRouter.js";
 import uploadsRouter from "./routers/uploadsRouter.js";
@@ -45,7 +45,7 @@ app.use((req, res, next) => {
 // app.use(`${process.env.BASE_URL}/docs`, swaggerUi.serve, swaggerUi.setup(apiDocs));
 app.use(process.env.BASE_URL, docsRouter);
 
-app.use(process.env.BASE_URL, porRouter);
+app.use(process.env.BASE_URL, eventPorRouter);
 app.use(process.env.BASE_URL, eventRouter);
 
 app.use("*",(req,res) => {

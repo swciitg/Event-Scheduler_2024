@@ -3,7 +3,7 @@ import path from "path";
 import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
 import eventModel from "../models/eventModel.js";
-import porModel from "../models/porModel.js";
+import eventPorModel from "../models/eventPorModel.js";
 import { definedCategories, definedBoards, swcDeployUrl } from "../shared/constants.js";
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -247,7 +247,7 @@ const editEvent = async (req, res) => {
 
         // Check if the user is authorized to edit the event
         const outlookEmail = req.user.outlookEmail;
-        const por = await porModel.findOne({});
+        const por = await eventPorModel.findOne({});
         const boardAdmins = por[eventBoard].admins;
         const clubOrgs = por[eventBoard].clubs_orgs;
 
@@ -372,7 +372,7 @@ const deleteEvent = async (req, res) => {
         
         // Check if the user is authorized to edit the event
         const outlookEmail = req.user.outlookEmail;
-        const por = await porModel.findOne({});
+        const por = await eventPorModel.findOne({});
         const boardAdmins = por[board].admins;
 
         const clubOrgs = por[board].clubs_orgs;

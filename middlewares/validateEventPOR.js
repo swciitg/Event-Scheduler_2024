@@ -1,4 +1,4 @@
-import porModel from '../models/porModel.js';
+import eventPorModel from '../models/eventPorModel.js';
 
 
 export const validateEventPOR = async (req, res, next) => {
@@ -7,7 +7,7 @@ export const validateEventPOR = async (req, res, next) => {
         const outlookEmail = req.user.outlookEmail;
         const board = req.body.board;
 
-        const por = await porModel.findOne({});
+        const por = await eventPorModel.findOne({});
         const boardAdmins = por[board].admins;
 
         const clubOrgs = por[board].clubs_orgs;

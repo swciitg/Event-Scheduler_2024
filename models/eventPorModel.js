@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { definedBoards } from "../shared/constants.js";
 
-const porSchema = new mongoose.Schema(definedBoards.map((board) => {
+const eventPorSchema = new mongoose.Schema(definedBoards.map((board) => {
     return {
         [`${board}`]: {
             'admins' : {
@@ -14,6 +14,6 @@ const porSchema = new mongoose.Schema(definedBoards.map((board) => {
     };
 }));
 
-const porModel = mongoose.model("por", porSchema);
+const eventPorModel = mongoose.model("eventPor", eventPorSchema);
 
-export default porModel;
+export default eventPorModel;
