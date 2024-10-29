@@ -1,3 +1,7 @@
+import porSchema from "../schema/porSchema.js";
+import authSchema from "../schema/authHeader.js";
+import securityKeySchema from "../schema/securityKeyHeader.js";
+
 const porPath = {
     '/por': {
         get: {
@@ -6,26 +10,8 @@ const porPath = {
             description: 'Get all PORs',
             operationId: 'getAllPORs',
             parameters: [
-                {
-                    in: 'header',
-                    name: 'authorization',
-                    schema: {
-                        type: 'string',
-                        example: 'Bearer <token>'
-                    },
-                    required: true,
-                    description: 'Bearer token for authorization'
-                },
-                {
-                    in: 'header',
-                    name: 'security-key',
-                    schema: {
-                        type: 'string',
-                        example: '<security-key>'
-                    },
-                    required: true,
-                    description: 'Security key provided by the admin',
-                },
+                authSchema,
+                securityKeySchema
             ],
             responses: {
                 '200': {
@@ -34,23 +20,7 @@ const porPath = {
                         'application/json': {
                             schema: {
                                 type: 'array',
-                                items: {
-                                    type: 'object',
-                                    properties: {
-                                        outlookEmail: {
-                                            type: 'string',
-                                            example: 'p.niraj@iitg.ac.in'
-                                        },
-                                        board: {
-                                            type: 'string',
-                                            example: 'Cultural'
-                                        },
-                                        position: {
-                                            type: 'string',
-                                            example: 'Secretary'
-                                        }
-                                    }
-                                }
+                                items: porSchema
                             }
                         }
                     }

@@ -1,3 +1,8 @@
+import eventGetSchema from "../schema/eventGetSchema.js";
+import eventPostSchema from "../schema/eventPostSchema.js";
+import authHeader from "../schema/authHeader.js";
+import securityKeyHeader from "../schema/securityKeyHeader.js";
+
 const eventPath = {
     '/:id': {
         get: {
@@ -15,26 +20,8 @@ const eventPath = {
                     "pattern": "^[0-9a-fA-F]{24}$" // Regular expression for valid ObjectId
                   }
                 },
-                {
-                    in: 'header',
-                    name: 'authorization',
-                    schema: {
-                        type: 'string',
-                        example: 'Bearer <token>'
-                    },
-                    required: true,
-                    description: 'Bearer token for authorization'
-                },
-                {
-                    in: 'header',
-                    name: 'security-key',
-                    schema: {
-                        type: 'string',
-                        example: '<security-key>'
-                    },
-                    required: true,
-                    description: 'Security key provided by the admin',
-                },
+                authHeader,
+                securityKeyHeader
               ],
               "responses": {
                 "200": {
@@ -44,51 +31,7 @@ const eventPath = {
                       "schema": {
                         "type": "object",
                         "properties": {
-                            "event": {
-                                "type": "object",
-                                "properties": {
-                                    "title": {
-                                        "type": "string",
-                                        "example": "Zenith 2024"
-                                    },
-                                    "imageURL": {
-                                        "type": "string",
-                                        "example": "https://example.com/image.jpg"
-                                    },
-                                    "compressedImageURL": {
-                                        "type": "string",
-                                        "example": "https://example.com/compressed-image.jpg"
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "Zenith is the annual club orientation event of Octaves, IITG."
-                                    },
-                                    "club_org": {
-                                        "type": "string",
-                                        "example": "Octaves"
-                                    },
-                                    "board": {
-                                        "type": "string",
-                                        "example": "Cultural"
-                                    },
-                                    "startDateTime": {
-                                        "type": "string",
-                                        "example": "2024-10-17T19:00:00.000Z"
-                                    },
-                                    "endDateTime": {
-                                        "type": "string",
-                                        "example": "2024-10-17T22:00:00.000Z"
-                                    },
-                                    "venue": {
-                                        "type": "string",
-                                        "example": "Auditorium"
-                                    },
-                                    "contactNumber": {
-                                        "type": "string",
-                                        "example": "9876543210"
-                                    }
-                                }
-                            }
+                            "event": eventGetSchema
                         }
                       }
                     }
@@ -159,72 +102,13 @@ const eventPath = {
                     "pattern": "^[0-9a-fA-F]{24}$" // Regular expression for valid ObjectId
                     }
                 },
-                {
-                    in: 'header',
-                    name: 'authorization',
-                    schema: {
-                        type: 'string',
-                        example: 'Bearer <token>'
-                    },
-                    required: true,
-                    description: 'Bearer token for authorization'
-                },
-                {
-                    in: 'header',
-                    name: 'security-key',
-                    schema: {
-                        type: 'string',
-                        example: '<security-key>'
-                    },
-                    required: true,
-                    description: 'Security key provided by the admin',
-                },
+                authHeader,
+                securityKeyHeader
                 ],
                 "requestBody": {
                 "content": {
                     "multipart/form-data": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                        "title": {
-                            "type": "string",
-                            "example": "Zenith 2024"
-                        },
-                        "description": {
-                            "type": "string",
-                            "example": "Zenith is the annual club orientation event of Octaves, IITG."
-                        },
-                        "startDateTime": {
-                            "type": "string",
-                            "example": "2024-10-17T19:00:00.000Z"
-                        },
-                        "endDateTime": {
-                            "type": "string",
-                            "example": "2024-10-17T22:00:00.000Z"
-                        },
-                        "venue": {
-                            "type": "string",
-                            "example": "Auditorium"
-                        },
-                        "club_org": {
-                            "type": "string",
-                            "example": "Octaves"
-                        },
-                        "board": {
-                            "type": "string",
-                            "example": "Cultural"
-                        },
-                        "contactNumber": {
-                            "type": "string",
-                            "example": "9876543210"
-                        },
-                        "file": {
-                            "type": "string",
-                            "description": "Image file",
-                        }
-                        },
-                        "required": [] // You can specify required fields here if any
-                    }
+                    "schema": eventPostSchema
                     }
                 }
                 },
@@ -310,26 +194,8 @@ const eventPath = {
                 "pattern": "^[0-9a-fA-F]{24}$" // Regular expression for valid ObjectId
                 }
             },
-            {
-                in: 'header',
-                name: 'authorization',
-                schema: {
-                    type: 'string',
-                    example: 'Bearer <token>'
-                },
-                required: true,
-                description: 'Bearer token for authorization'
-            },
-            {
-                in: 'header',
-                name: 'security-key',
-                schema: {
-                    type: 'string',
-                    example: '<security-key>'
-                },
-                required: true,
-                description: 'Security key provided by the admin',
-            },
+            authHeader,
+            securityKeyHeader
             ],
             "responses": {
             "200": {

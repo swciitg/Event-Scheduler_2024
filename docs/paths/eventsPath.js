@@ -1,3 +1,8 @@
+import eventGetSchema from "../schema/eventGetSchema.js";
+import eventPostSchema from "../schema/eventPostSchema.js";
+import security_keyHeader from "../schema/securityKeyHeader.js";
+import authHeader from "../schema/authHeader.js";
+
 const eventsPath = {
     '/': {
         get: {
@@ -6,26 +11,8 @@ const eventsPath = {
             description: 'Get all events',
             operationId: 'getAllEvents',
             parameters: [
-                {
-                    in: 'header',
-                    name: 'authorization',
-                    schema: {
-                        type: 'string',
-                        example: 'Bearer <token>'
-                    },
-                    required: true,
-                    description: 'Bearer token for authorization'
-                },
-                {
-                    in: 'header',
-                    name: 'security-key',
-                    schema: {
-                        type: 'string',
-                        example: '<security-key>'
-                    },
-                    required: true,
-                    description: 'Security key provided by the admin',
-                },
+                authHeader,
+                security_keyHeader
             ],
             responses: {
                 '200': {
@@ -42,51 +29,7 @@ const eventsPath = {
                                     },
                                     allEvents: {
                                         type: 'array',
-                                        items: {
-                                            type: 'object',
-                                            properties: {
-                                                title: {
-                                                    type: 'string',
-                                                    example: 'Zenith 2024'
-                                                },
-                                                imageURL: {
-                                                    type: 'string',
-                                                    example: 'https://example.com/image.jpg'
-                                                },
-                                                compressedImageURL: {
-                                                    type: 'string',
-                                                    example: 'https://example.com/compressed-image.jpg'
-                                                },
-                                                description: {
-                                                    type: 'string',
-                                                    example: 'Zenith is the annual club orientation event of Octaves, IITG.'
-                                                },
-                                                club_org: {
-                                                    type: 'string',
-                                                    example: 'Octaves'
-                                                },
-                                                board: {
-                                                    type: 'string',
-                                                    example: 'Cultural'
-                                                },
-                                                startDateTime: {
-                                                    type: 'string',
-                                                    example: '2024-10-17T19:00:00.000Z'
-                                                },
-                                                endDateTime: {
-                                                    type: 'string',
-                                                    example: '2024-10-17T21:00:00.000Z'
-                                                },
-                                                venue: {
-                                                    type: 'string',
-                                                    example: 'Auditorium'
-                                                },
-                                                contactNumber: {
-                                                    type: 'string',
-                                                    example: '9876543210'
-                                                }
-                                            }
-                                        }
+                                        items: eventGetSchema
                                     }
                                 }
                             }
@@ -118,67 +61,13 @@ const eventsPath = {
             description: 'Post a new event',
             operationId: 'postEvent',
             parameters: [
-                {
-                    in: 'header',
-                    name: 'authorization',
-                    schema: {
-                        type: 'string',
-                        example: 'Bearer <token>'
-                    },
-                    required: true,
-                    description: 'Bearer token for authorization'
-                },
-                {
-                    in: 'header',
-                    name: 'security-key',
-                    schema: {
-                        type: 'string',
-                        example: '<security-key>'
-                    },
-                    required: true,
-                    description: 'Security key provided by the admin',
-                },
+                authHeader,
+                security_keyHeader
             ],
             requestBody: {
                 content: {
                     'multipart/form-data': {
-                        schema: {
-                            type: 'object',
-                            properties: {
-                                title: {
-                                    type: 'string',
-                                    example: 'Zenith 2024',
-                                },
-                                description: {
-                                    type: 'string',
-                                    example: 'Zenith is the annual club orientation event of Octaves, IITG.'
-                                },
-                                startDateTime: {
-                                    type: 'string',
-                                    example: '2024-10-17T19:00:00.000Z',
-                                },
-                                endDateTime: {
-                                    type: 'string',
-                                    example: '2024-10-17T21:00:00.000Z',
-                                },
-                                venue: {
-                                    type: 'string',
-                                    example: 'Auditorium'
-                                },
-                                club_org: {
-                                    type: 'string/enum',
-                                    example: 'Octaves',
-                                },
-                                contactNumber: {
-                                    type: 'string',
-                                    example: '9876543210'
-                                },
-                                file: {
-                                    description: 'Image file',
-                                }
-                            },
-                            required: ['title', 'club_org', 'board', 'startDateTime', 'endDateTime'],
-                        },
+                        schema: eventPostSchema
                     }
                 }
             },

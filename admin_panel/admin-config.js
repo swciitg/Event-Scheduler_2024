@@ -6,7 +6,7 @@ import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
 
-import porModel from "../models/porModel.js";
+import eventPorModel from "../models/eventPorModel.js";
 
 const ADMINPANELROOT = process.env.BASE_URL + "/admin";
 
@@ -31,7 +31,7 @@ mongoose.connect(process.env.MONGO_URI);
 
 const adminOptions = {
   resources: [
-    porModel,
+    eventPorModel,
   ],
   rootPath: ADMINPANELROOT,
   loginPath: ADMINPANELROOT + "/login",
