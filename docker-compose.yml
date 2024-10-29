@@ -12,7 +12,7 @@ services:
                 env_file:
                         - .env
                 volumes:
-                        - eventsimages:/home/node/app/uploads
+                        - eventsimages:/usr/src/app/uploads
 
 networks:
     default:
