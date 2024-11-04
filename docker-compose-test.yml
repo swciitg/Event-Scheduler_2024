@@ -1,0 +1,23 @@
+version: "3.3"
+
+services:
+        eventsonestoptest:
+                build:
+                        context: .
+                        dockerfile: Dockerfile
+                extra_hosts:
+                        - "host.docker.internal:host-gateway"
+                ports:
+                        - "9344:8008"
+                env_file:
+                        - .env.test
+                volumes:
+                        - eventsimagestest:/usr/src/app/uploads
+
+networks:
+    default:
+        external:
+            name: backend_default
+
+volumes:
+        eventsimagestest:
