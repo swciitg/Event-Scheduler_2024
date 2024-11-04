@@ -8,14 +8,13 @@ export const getUserInfo = async (req, res, next) => {
         if (!user) {
             next(new RequestValidationError("Invalid User or Security Key / Spam Request")); 
         }else{
-        // // if (user.outlookEmail === guestUserEmail) {
-        // //     next(new GuestAccessError("Can't Access this feature in Guest Mode"));
-        // // } else {
+        // if (user.outlookEmail === guestUserEmail) {
+        //     next(new GuestAccessError("Can't Access this feature in Guest Mode"));
+        // } else {
             req.user = user;
-        //    req.user = {outlookEmail : "p.niraj@iitg.ac.in"};
             next();
-        // }
         }
+        // }
     } catch (e) {
         next(e);
     }
@@ -28,7 +27,6 @@ export const verifyUserInfo = async (req, res, next) => {
             next(new RequestValidationError("Invalid User or Security Key / Spam Request")); 
         } else {
             req.user = user;
-        //    req.user = {outlookEmail : "p.niraj@iitg.ac.in"};
             next();
         }
     } catch (e) {
